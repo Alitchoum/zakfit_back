@@ -54,7 +54,7 @@ struct UserController: RouteCollection  {
     @Sendable
     func updateUserProfile(req: Request) async throws -> UserResponseDTO {
         
-        // Récupère le payload JWT (id user)
+        // Récupère le payload JWT (ref user)
         let payload = try req.auth.require(UserPayload.self)
         
         //Cherche user
