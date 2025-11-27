@@ -11,12 +11,12 @@ import Fluent
 struct NutritionGoalController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
         let nutritionGoal = routes.grouped("nutritionGoal")
-                
+        
         let protected = nutritionGoal.grouped(JWTMiddleware())
-        protected.post(use: createNutritionGoal)
-        protected.patch(":id", use: updateNutritionGoal)
-        protected.delete(":id", use: deleteNutritionGoal)
-        protected.get(":id", use: getUserGoal)
+        protected.post("current", use: createNutritionGoal)
+        protected.patch("current", use: updateNutritionGoal)
+        protected.delete("current", use: deleteNutritionGoal)
+        protected.get("current", use: getUserGoal)
     }
     
     //CREATE
@@ -31,10 +31,10 @@ struct NutritionGoalController: RouteCollection {
             .filter(\.$user.$id == payload.id)
             .first()
         
-        guard goalExist == nil else {
+        if goalExist != nil  {
             throw Abort(.badRequest, reason: "You already have a nutrition goal")
         }
-    
+        
         let nutritionGoal = NutritionGoal(
             caloriesTarget: dto.caloriesTarget,
             proteinsTarget: dto.proteinsTarget,
@@ -56,21 +56,27 @@ struct NutritionGoalController: RouteCollection {
         
         let payload = try req.auth.require(UserPayload.self)
         
-        guard let nutritionGoal = try await NutritionGoal.find(payload.id, on : req.db) else {
+        guard let nutritionGoal = try await NutritionGoal.query(on: req.db)
+            .filter(\.$user.$id == payload.id)
+            .first() else {
             throw Abort(.notFound, reason: "Nutrition Goal not found")
         }
         return nutritionGoal.toResponse()
     }
-        
+    
     //UPDATE
     @Sendable
     func updateNutritionGoal(req: Request) async throws -> NutritionGoalResponseDTO {
         
-        guard let nutriGoal = try? await NutritionGoal.find(req.parameters.require("id"), on: req.db) else {
-            throw Abort(.notFound, reason : "Nutrition Goal not found")
+        let payload = try req.auth.require(UserPayload.self)
+        
+        guard let nutriGoal = try await NutritionGoal.query(on: req.db)
+            .filter(\.$user.$id == payload.id)
+            .first() else {
+            throw Abort(.notFound, reason: "Nutrition Goal not found")
         }
         
-        var updatedData = try req.content.decode(NutritionGoalUpdateDTO.self)
+        let updatedData = try req.content.decode(NutritionGoalUpdateDTO.self)
         
         if let caloriesTarget = updatedData.caloriesTarget { nutriGoal.caloriesTarget = caloriesTarget }
         if let proteinsTarget = updatedData.proteinsTarget { nutriGoal.proteinsTarget = proteinsTarget }
@@ -85,9 +91,15 @@ struct NutritionGoalController: RouteCollection {
     //DELETE
     @Sendable
     func deleteNutritionGoal(req: Request) async throws -> HTTPStatus {
-        guard let nutriGoal = try? await NutritionGoal.find(req.parameters.require("id"), on: req.db) else {
-            throw Abort(.notFound, reason : "Nutrition Goal not found")
+        
+        let payload = try req.auth.require(UserPayload.self)
+        
+        guard let nutriGoal = try await NutritionGoal.query(on: req.db)
+            .filter(\.$user.$id == payload.id)
+            .first() else {
+            throw Abort(.notFound, reason: "Nutrition Goal not found")
         }
+        
         try await nutriGoal.delete(on: req.db)
         return .noContent
     }

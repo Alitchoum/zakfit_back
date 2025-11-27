@@ -17,7 +17,6 @@ struct ActivityDTO: Content, Validatable {
     static func validations(_ validations: inout Validations) {
         validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
         validations.add("caloriesBurned", as: Int.self, is : .range(0...2000))
-        //validations.add("categoryId", as: UUID.self, is: !.empty)
     }
 }
 

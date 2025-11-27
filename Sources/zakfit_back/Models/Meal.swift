@@ -65,4 +65,19 @@ final class Meal: Model, Content, @unchecked Sendable {
         self.date = date
         self.$user.id = userID
     }
+    
+    func toResponse() -> MealResponseDTO{
+        MealResponseDTO(
+            id: self.id,
+            type : self.type,
+            image: self.image,
+            picto: self.picto,
+            totalCalories: self.totalCalories,
+            totalProteins : self.totalProteins,
+            totalCarbs: self.totalCarbs,
+            totalFats : self.totalFats,
+            date : self.date,
+            userId : self.$user.id
+        )
+    }
 }

@@ -34,8 +34,8 @@ final class Food: Model, Content, @unchecked Sendable {
     
     // MARK: - Relations
     
-    @Parent(key: "user_id")
-    var user : User
+    @OptionalParent(key: "user_id")
+    var user: User?
 
     @Parent(key: "food_category_id")
     var foodCategory: FoodCategory
@@ -49,7 +49,7 @@ final class Food: Model, Content, @unchecked Sendable {
     
     init() {}
     
-    init(name: String, calories100g: Double, carbs100g: Double, fats100g: Double, proteins100g: Double, isAuto: Bool, userID: UUID, foodCategoryID: UUID)
+    init(name: String, calories100g: Double, carbs100g: Double, fats100g: Double, proteins100g: Double, isAuto: Bool, userID: UUID? = nil , foodCategoryID: UUID)
     {
         self.name = name
         self.calories100g = calories100g
@@ -61,15 +61,17 @@ final class Food: Model, Content, @unchecked Sendable {
         self.$foodCategory.id = foodCategoryID
     }
     
-    func toResponse() -> FoodResponse {
-        FoodResponse(
+    func toResponse() -> FoodResponseDTO {
+        FoodResponseDTO(
             id: self.id,
             name: self.name,
             calories100g: self.calories100g,
             carbs100g: self.carbs100g,
             fats100g: self.fats100g,
             proteins100g: self.proteins100g,
-            isAuto: self.isAuto
+            isAuto: self.isAuto,
+            userID: self.$user.id,
+            foodCategoryID: self.$foodCategory.id
         )
     }
 }

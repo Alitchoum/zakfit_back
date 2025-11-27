@@ -8,6 +8,7 @@
 import Vapor
 import Fluent
 
+
 final class NutritionGoal: Model, Content, @unchecked Sendable {
     static let schema = "nutrition_goals"
     
@@ -26,24 +27,31 @@ final class NutritionGoal: Model, Content, @unchecked Sendable {
     @OptionalField(key: "fats_target")
     var fatsTarget: Double?
     
-    @Field(key: "auto")
+    @Field(key: "is_auto")
     var isAuto: Bool
     
     // MARK: - Relation
-    
     @Parent(key: "user_id")
     var user: User
     
-    init(){}
+    init() {}
     
-    init(caloriesTarget: Double, proteinsTarget: Double? = nil, carbsTarget: Double? = nil, fatsTarget: Double? = nil, isAuto: Bool = false, userID: UUID)
-    {
+    init(
+        id: UUID? = nil,
+        caloriesTarget: Double,
+        proteinsTarget: Double? = nil,
+        carbsTarget: Double? = nil,
+        fatsTarget: Double? = nil,
+        isAuto: Bool = false,
+        userID: UUID
+    ) {
+        self.id = id
         self.caloriesTarget = caloriesTarget
         self.proteinsTarget = proteinsTarget
         self.carbsTarget = carbsTarget
         self.fatsTarget = fatsTarget
         self.isAuto = isAuto
-        self.$user.id = userID
+        self.$user.id = userID 
     }
     
     func toResponse() -> NutritionGoalResponseDTO {

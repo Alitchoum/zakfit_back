@@ -20,17 +20,18 @@ final class FoodCategory: Model, Content, @unchecked Sendable {
     @Field(key: "picto")
     var picto: String
     
+    // MARK: - Relation
     @Children(for: \.$foodCategory)
     var foods: [Food]
     
     init() { }
     init(name: String, picto: String) {
         self.name = name
-        self.name = picto
+        self.picto = picto
     }
     
-    func toResponse() -> FoodCategoryResponse {
-        FoodCategoryResponse(
+    func toResponse() -> FoodCategoryResponseDTO {
+        FoodCategoryResponseDTO(
             id: id.self,
             name: self.name,
             picto: self.picto

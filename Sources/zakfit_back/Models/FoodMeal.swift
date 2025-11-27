@@ -32,4 +32,14 @@ final class FoodMeal: Model, Content, @unchecked Sendable{
         self.$meal.id = mealID
         self.$food.id = foodID
     }
+    
+    func toResponse() -> FoodMealResponseDTO {
+        FoodMealResponseDTO(
+            id: self.id,
+            quantity: self.quantity,
+            mealID: self.$meal.id,
+            foodID: self.$food.id
+        )
+    }
 }
+

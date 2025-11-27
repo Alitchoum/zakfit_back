@@ -8,16 +8,18 @@
 import Fluent
 import Vapor
 
-struct FoodDTOS: Content {
+struct CreateFoodDTO: Content {
     let name: String
     let calories100g: Double
     let carbs100g: Double
     let fats100g: Double
     let proteins100g: Double
     let isAuto: Bool
+    let userID: UUID?
+    let foodCategoryID: UUID
 }
 
-struct FoodResponse: Content {
+struct FoodResponseDTO: Content {
     let id: UUID?
     let name: String
     let calories100g: Double
@@ -25,15 +27,18 @@ struct FoodResponse: Content {
     let fats100g: Double
     let proteins100g: Double
     let isAuto: Bool
+    let userID: UUID?
+    let foodCategoryID: UUID
 }
 
-struct FoodUpdate: Content {
+struct FoodUpdateDTO: Content {
     let name: String?
     let calories100g: Double?
     let carbs100g: Double?
     let fats100g: Double?
     let proteins100g: Double?
     let isAuto: Bool?
+    let foodCategoryID: UUID?
 }
 
 //Ajouter func toModel()

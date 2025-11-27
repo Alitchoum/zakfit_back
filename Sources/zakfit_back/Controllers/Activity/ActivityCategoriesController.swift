@@ -27,4 +27,6 @@ struct CategoryActivitiesController: RouteCollection {
         try await category.save(on: req.db)
         return category.toResponse()
     }
+    
+    //AJOUTER AUTRES ROUTES PLUS TARD
 }

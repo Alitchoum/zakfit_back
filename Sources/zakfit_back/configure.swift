@@ -25,7 +25,14 @@ public func configure(_ app: Application) async throws {
     
     //MARK: - Migrations Goals
     app.migrations.add(CreateNutritionGoal())
-    //app.migrations.add(CreatePhysicalGoal())
+    app.migrations.add(CreatePhysicalGoal())
+    
+    //MARK: - Migrations Meals
+    app.migrations.add(CreateFoodCategory())
+    app.migrations.add(CreateFood())
+    app.migrations.add(CreateMeal())
+    app.migrations.add(CreateFoodMeal())
+    
     
     try await app.autoMigrate()
     try routes(app)

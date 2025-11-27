@@ -37,8 +37,8 @@ final class PhysicalGoal: Model, Content, @unchecked Sendable {
         self.$user.id = userID
     }
     
-    func toResponse() -> PhysicalGoalResponse {
-        PhysicalGoalResponse(
+    func toResponse() -> PhysicalGoalResponseDTO {
+        PhysicalGoalResponseDTO(
             id: self.id,
             duration: self.duration,
             frequency: self.frequency,

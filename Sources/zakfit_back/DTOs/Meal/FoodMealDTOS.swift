@@ -8,20 +8,20 @@
 import Fluent
 import Vapor
 
-struct MealFoodDTOS: Content {
+struct CreateFoodMealDTO: Content {
     let quantity: Int
     let mealID: UUID
     let foodID: UUID
 }
 
-struct MealFoodResponse: Content {
+struct FoodMealResponseDTO: Content {
     let id: UUID?
     let quantity: Int
     let mealID: UUID
     let foodID: UUID
 }
 
-struct MealFoodUpdate: Content {
+struct FoodMealUpdateDTO: Content {
     let quantity: Int?
     let mealID: UUID?
     let foodID: UUID?

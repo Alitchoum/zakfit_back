@@ -13,10 +13,10 @@ struct ActivityController: RouteCollection {
         let activities = routes.grouped("activities")
         
         let protected = activities.grouped(JWTMiddleware())
-        protected.post(use: createActivity)
-        protected.get(use: getActivities)
-        protected.patch(":id", use: updateActivity)
-        protected.delete(":id", use: deleteActivity)
+        protected.post("current", use: createActivity)
+        protected.get("current", use: getActivities)
+        protected.patch("current", use: updateActivity)
+        protected.delete("current", use: deleteActivity)
     }
     
     //CREATE

@@ -14,7 +14,7 @@ struct PhysicalGoalDTO: Content {
     let caloriesBurned: Double?
 }
 
-struct PhysicalGoalResponse: Content {
+struct PhysicalGoalResponseDTO: Content {
     let id: UUID?
     let duration: Int?
     let frequency: Int?
@@ -22,7 +22,7 @@ struct PhysicalGoalResponse: Content {
     let userID: UUID
 }
 
-struct PhysicalGoalUpdate: Content {
+struct PhysicalGoalUpdateDTO: Content {
     let duration: Int?
     let frequency: Int?
     let caloriesBurned: Double?
