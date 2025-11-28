@@ -19,7 +19,7 @@ struct NutritionGoalController: RouteCollection {
         protected.get("current", use: getUserGoal)
     }
     
-    //CREATE
+    //CREATE USER GOAL
     @Sendable
     func createNutritionGoal(req: Request) async throws -> NutritionGoalResponseDTO {
         let dto = try req.content.decode(NutritionGoalDTO.self)
@@ -64,7 +64,7 @@ struct NutritionGoalController: RouteCollection {
         return nutritionGoal.toResponse()
     }
     
-    //UPDATE
+    //UPDATE USER GOAL
     @Sendable
     func updateNutritionGoal(req: Request) async throws -> NutritionGoalResponseDTO {
         
@@ -88,7 +88,7 @@ struct NutritionGoalController: RouteCollection {
         return nutriGoal.toResponse()
     }
     
-    //DELETE
+    //DELETE USER GOAL
     @Sendable
     func deleteNutritionGoal(req: Request) async throws -> HTTPStatus {
         

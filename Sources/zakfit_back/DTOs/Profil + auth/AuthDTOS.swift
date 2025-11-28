@@ -42,3 +42,8 @@ struct LoginResponseDTO: Content {
     let token: String
     let user: UserResponseDTO?
 }
+
+struct RegisterResponseDTO: Content {
+    let user: UserResponseDTO
+    let token: String
+}

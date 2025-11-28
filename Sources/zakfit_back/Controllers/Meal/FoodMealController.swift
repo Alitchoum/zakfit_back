@@ -16,6 +16,7 @@ struct FoodMealController: RouteCollection {
         protected.post("current", use: createFoodMeal)
         
     }
+    
     //CREATE FOOD MEAL
     @Sendable
     func createFoodMeal(req: Request) async throws -> FoodMealResponseDTO {

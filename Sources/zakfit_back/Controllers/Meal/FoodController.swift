@@ -14,15 +14,15 @@ struct FoodController: RouteCollection {
         
         foods.post(use: createFood)
         foods.get(use: getAll)
+        
         foods.patch(":foodID", use: updateFood)
-//        foods.get(":id", use: getById)
         
         let protected = foods.grouped(JWTMiddleware())
         protected.post("current", use: createUserFood)
         protected.patch("current", ":foodID", use: updateUserFood)
     }
     
-    //CREATE GLOBAL
+    //CREATE GLOBAL (admin)
     @Sendable
     func createFood(req: Request) async throws -> FoodResponseDTO {
         let dto = try req.content.decode(CreateFoodDTO.self)
@@ -120,4 +120,7 @@ struct FoodController: RouteCollection {
         try await food.update(on: req.db)
         return food.toResponse()
     }
+    
+    //DELETE GLOBAL
+    //DELETE USER FOOD
 }

@@ -13,11 +13,9 @@ struct UserController: RouteCollection  {
     func boot(routes: any RoutesBuilder) throws {
         let users = routes.grouped("users")
         
-        //Public routes
         users.get(use: getAllUsers)
-        users.get(":userID", use: getUserByID)
+        users.get(":id", use: getUserByID)
         
-        //Authenticated Routes
         let protected = users.grouped(JWTMiddleware())
         protected.get("profile", use: userProfile)
         protected.patch("profile", use: updateUserProfile)
@@ -44,13 +42,13 @@ struct UserController: RouteCollection  {
     //GET BY ID
     @Sendable
     func getUserByID(req: Request) async throws -> UserResponseDTO {
-        guard let user = try await User.find(req.parameters.get("userID"), on: req.db) else {
+        guard let user = try await User.find(req.parameters.get("id"), on: req.db) else {
             throw Abort(.notFound, reason: "User not found")
         }
         return user.toResponse()
     }
     
-    //UPDATE PROFIL
+    //UPDATE USER PROFIL
     @Sendable
     func updateUserProfile(req: Request) async throws -> UserResponseDTO {
         
@@ -96,7 +94,3 @@ struct UserController: RouteCollection  {
     
     //DELETE
 }
-
-
-
-//❌ route logout (optionnelle côté API)

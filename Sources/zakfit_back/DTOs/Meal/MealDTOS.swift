@@ -9,17 +9,16 @@ import Fluent
 import Vapor
 
 struct CreateMealDTO: Content {
-    
     let type: String
     let image: String?
     let picto: String
     let date: Date
-    let contents: [MealContentDTO]
+    let foods: [FoodsDTO]
 }
 
-struct MealContentDTO: Content {
-    let foodID: UUID
-    let quantity: Double
+struct FoodsDTO: Content {
+    let id: UUID
+    let quantity: Int
 }
 
 struct MealResponseDTO: Content {
@@ -41,11 +40,8 @@ struct MealUpdateDTO: Content {
     let type: String?
     let image: String?
     let picto: String?
-    let totalCalories: Double?
-    let totalProteins: Double?
-    let totalCarbs: Double?
-    let totalFats: Double?
     let date: Date?
+    let foods: [FoodsDTO]?
 }
 
 

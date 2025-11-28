@@ -15,6 +15,7 @@ struct ActivityController: RouteCollection {
         let protected = activities.grouped(JWTMiddleware())
         protected.post("current", use: createActivity)
         protected.get("current", use: getActivities)
+        // options:  "categoryFilter=id-activity" "month=yyyy-MM" "durationFilter=0-1h" "sortBy=date" "order=asc"
         protected.patch("current", use: updateActivity)
         protected.delete("current", use: deleteActivity)
     }
@@ -70,7 +71,7 @@ struct ActivityController: RouteCollection {
         }
         
         //FILTERED BY MONTH
-        if let monthFilter = try? req.query.get(String.self, at: "month") {//format yyyy-MM
+        if let monthFilter = try? req.query.get(String.self, at: "month") { //format yyyy-MM
             let split = monthFilter.split(separator: "-")
             let year = Int(split[0])!
             let month = Int(split[1])!
@@ -87,9 +88,10 @@ struct ActivityController: RouteCollection {
             
         }
         
-        //SORT DATE / ACTIVITY
+        //SORT (DATE / ACTIVITY / DURATION)
         let sortBy: String? = try? req.query.get(String.self, at: "sortBy")  //date/category/durée
         let order: String? = try? req.query.get(String.self, at: "order")    // asc/desc"
+        
         if let sortBy = sortBy, let order = order {
             switch (sortBy, order) {
             case ("date", "asc"):
@@ -122,7 +124,7 @@ struct ActivityController: RouteCollection {
         return activities.map{$0.toResponse()}
     }
     
-    //UPDATE ACTIVITY
+    //UPDATE ACTIVITY -> adapter pour user !
     @Sendable
     func updateActivity(req: Request) async throws -> ActivityResponseDTO{
                 
@@ -141,7 +143,7 @@ struct ActivityController: RouteCollection {
         return activity.toResponse()
     }
     
-    //DELETE ACTIVITY
+    //DELETE ACTIVITY -> adapter pour user !
     @Sendable
     func deleteActivity(req: Request) async throws -> HTTPStatus{
         guard let activity = try await Activity.find(req.parameters.require("id"), on: req.db) else {
@@ -150,5 +152,7 @@ struct ActivityController: RouteCollection {
         try await activity.delete(on: req.db)
         return .noContent
     }
+   
+    
 }
 

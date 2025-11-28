@@ -20,7 +20,7 @@ struct AuthController: RouteCollection  {
     
     //REGISTER
     @Sendable
-    func registerUser(req: Request) async throws -> UserResponseDTO {
+    func registerUser(req: Request) async throws -> RegisterResponseDTO {
         
         //Verifs password > 8 et email format
         try UserRegisterDTO.validate(content: req)
@@ -32,7 +32,7 @@ struct AuthController: RouteCollection  {
             .filter(\.$email == dto.email)
             .first()
         guard checkEmail == nil else {
-            throw Abort(.badRequest, reason: "Email already exist.")
+            throw Abort(.conflict, reason: "Email already exist.")
         }
         
         let user = User(
@@ -48,8 +48,15 @@ struct AuthController: RouteCollection  {
             birthday: dto.birthday
         )
         
+        let payload = UserPayload(id: user.id!)
+        let signer = JWTSigner.hs256(key: "zakfit2025")
+        let token = try signer.sign(payload)
+        
         try await user.save(on: req.db)
-        return user.toResponse()
+        return RegisterResponseDTO(
+            user: user.toResponse(),
+            token: token
+        )
     }
     
     //LOGIN
@@ -71,6 +78,7 @@ struct AuthController: RouteCollection  {
         let payload =  UserPayload(id: user.id!)
         let signer = JWTSigner.hs256(key: "zakfit2025")
         let token = try signer.sign(payload)
+        
         return LoginResponseDTO(
             token: token,
             user: user.toResponse()

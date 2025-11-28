@@ -20,7 +20,7 @@ struct PhysicalGoalController: RouteCollection {
         protected.delete("current", use: deletePhysicalGoal)
     }
     
-    //CREATE
+    //CREATE USER GOAL
     @Sendable
     func createPhysicalGoal(req: Request) async throws -> PhysicalGoalResponseDTO {
         let dto = try req.content.decode(PhysicalGoalDTO.self)
@@ -46,7 +46,7 @@ struct PhysicalGoalController: RouteCollection {
         return physicalGoal.toResponse()
     }
     
-    //GET USER PHYSICAL GOAL
+    //GET USER GOAL
     @Sendable
     func getUserGoal(req: Request) async throws -> PhysicalGoalResponseDTO {
         
@@ -81,7 +81,7 @@ struct PhysicalGoalController: RouteCollection {
         return physicalGoal.toResponse()
     }
     
-    //DELETE
+    //DELETE USER GOAL
     @Sendable
     func deletePhysicalGoal(req: Request) async throws -> HTTPStatus {
         

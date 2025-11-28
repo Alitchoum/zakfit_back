@@ -18,7 +18,6 @@ struct UserPayload: JWTPayload, Authenticatable {
             throw JWTError.invalidJWK
         }
     }
-    
     init(id: UUID) {
         self.id = id
         self.expiration = Date().addingTimeInterval(60 * 60 * 24 * 7)
