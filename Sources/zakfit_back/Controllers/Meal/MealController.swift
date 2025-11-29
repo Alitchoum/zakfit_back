@@ -14,6 +14,8 @@ struct MealController: RouteCollection {
         let protected = meals.grouped(JWTMiddleware())
         
         protected.post("current", use: createMeal)
+        protected.get("current", use: getUserMeals)
+        protected.delete("current", ":id", use: deleteMeal)
     }
     
     // CREATE USER MEAL
@@ -42,7 +44,7 @@ struct MealController: RouteCollection {
         var totalCarbs: Double = 0
         var totalFats: Double = 0
         
-        // Parcours  aliments pour créer les FoodMeal
+        // Parcours  aliments pour créer les FoodMeals
         for foodDTO in dto.foods {
             guard let food = try await Food.find(foodDTO.id, on: req.db) else {
                 throw Abort(.notFound, reason: "Food not found")
@@ -56,7 +58,6 @@ struct MealController: RouteCollection {
             try await foodMeal.save(on: req.db)
             
             // Calcul des totaux en fonction de la quantité
-            let factor = Double(foodDTO.quantity) / 100
             totalCalories += food.calories100g *  Double(foodDTO.quantity / 100)
             totalProteins += food.proteins100g * Double(foodDTO.quantity / 100)
             totalCarbs += food.carbs100g * Double(foodDTO.quantity / 100)
@@ -78,7 +79,6 @@ struct MealController: RouteCollection {
         return meal.toResponse()
     }
 
-    
     //GET USER MEALS
     @Sendable
     func getUserMeals(req: Request) async throws -> [MealResponseDTO] {
@@ -91,5 +91,32 @@ struct MealController: RouteCollection {
         return meals.map{$0.toResponse()}
     }
     
-    //AJOUTER AUTRES ROUTES PLUS TARD
+    //DELETE USER MEAL
+    @Sendable
+    func deleteMeal(req: Request) async throws -> HTTPStatus {
+       
+        let payload = try req.auth.require(UserPayload.self)
+        let queryID = try req.parameters.require("id")
+      
+        guard let mealID = UUID(uuidString: queryID) else {
+            throw Abort(.notFound, reason: "Invalid ID")
+        }
+        
+        guard let meal = try await Meal.query(on: req.db)
+            .filter(\.$id == mealID)
+            .filter(\.$user.$id == payload.id)
+            .first()
+        else {
+            throw Abort(.notFound, reason: "Meal not found")
+        }
+        //SUPPRIME FOODMEALS LIÉs
+       let foodMeal = try await meal.$foodMeals.query(on: req.db).all()
+            for foodMeal in foodMeal {
+            try await foodMeal.delete(on: req.db)
+        }
+        try await meal.delete(on: req.db)
+        return .noContent
+    }
+    
+    //UPDATE USER MEAL 
 }

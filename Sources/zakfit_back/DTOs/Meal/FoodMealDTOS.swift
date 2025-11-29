@@ -8,10 +8,16 @@
 import Fluent
 import Vapor
 
-struct CreateFoodMealDTO: Content {
+struct CreateFoodMealDTO: Content, Validatable {
     let quantity: Int
     let mealID: UUID
     let foodID: UUID
+    
+    static func validations(_ validations: inout Validations) {
+        validations.add("quantity", as: Int.self, is : .range(0...))
+        validations.add("mealID", as: UUID.self)
+        validations.add("foodID", as: UUID.self)
+    }
 }
 
 struct FoodMealResponseDTO: Content {
@@ -21,10 +27,16 @@ struct FoodMealResponseDTO: Content {
     let foodID: UUID
 }
 
-struct FoodMealUpdateDTO: Content {
+struct FoodMealUpdateDTO: Content, Validatable {
     let quantity: Int?
     let mealID: UUID?
     let foodID: UUID?
+    
+    static func validations(_ validations: inout Validations) {
+        validations.add("quantity", as: Int.self, is : .range(0...))
+        validations.add("mealID", as: UUID.self)
+        validations.add("foodID", as: UUID.self)
+    }
 }
 
 //Ajouter func toModel()

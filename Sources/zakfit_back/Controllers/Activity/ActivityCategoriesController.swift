@@ -28,5 +28,5 @@ struct CategoryActivitiesController: RouteCollection {
         return category.toResponse()
     }
     
-    //AJOUTER AUTRES ROUTES PLUS TARD
+    //AJOUTER AUTRES ROUTES PLUS TARD (en dur)
 }

@@ -16,8 +16,8 @@ struct ActivityController: RouteCollection {
         protected.post("current", use: createActivity)
         protected.get("current", use: getActivities)
         // options:  "categoryFilter=id-activity" "month=yyyy-MM" "durationFilter=0-1h" "sortBy=date" "order=asc"
-        protected.patch("current", use: updateActivity)
-        protected.delete("current", use: deleteActivity)
+        protected.patch("current", ":id", use: updateActivity)
+        protected.delete("current", ":id", use: deleteActivity)
     }
     
     //CREATE
@@ -124,35 +124,65 @@ struct ActivityController: RouteCollection {
         return activities.map{$0.toResponse()}
     }
     
-    //UPDATE ACTIVITY -> adapter pour user !
+    //UPDATE ACTIVITY
     @Sendable
     func updateActivity(req: Request) async throws -> ActivityResponseDTO{
-                
-        guard let activity = try await Activity.find(req.parameters.require("id"), on: req.db) else {
+        
+        let payload = try req.auth.require(UserPayload.self)
+        let queryID = try req.parameters.require("id")
+        
+        guard let activityID = UUID(uuidString: queryID ) else {
+            throw Abort(.badRequest, reason: "Invalid id")
+        }
+        
+        guard let activity = try await Activity.find(activityID, on: req.db) else {
             throw Abort(.notFound, reason : "Activity not found")
         }
         
+        guard activity.$user.id == payload.id else {
+            throw Abort(.forbidden, reason: "Cannot delete this activity")
+        }
+        
+        try ActivityUpdateDTO.validate(content: req)
         let updateData = try req.content.decode(ActivityUpdateDTO.self)
-
+        
         if let duration = updateData.duration {activity.duration = duration}
         if let caloriesBurned = updateData.caloriesBurned {activity.caloriesBurned = caloriesBurned}
-        if let categoryId = updateData.categoryId {activity.$category.id = categoryId}
+       
+        //Vérifie si catégorie valide
+        if let categoryId = updateData.categoryId {
+            guard let _ = try await CategoryActivity.find(categoryId, on: req.db) else {
+                throw Abort(.badRequest, reason: "Category of activity not found")
+            }
+            activity.$category.id = categoryId
+        }
+        
         if let date = updateData.date {activity.date = date}
         
         try await activity.update(on: req.db)
         return activity.toResponse()
     }
     
-    //DELETE ACTIVITY -> adapter pour user !
+    //DELETE ACTIVITY
     @Sendable
     func deleteActivity(req: Request) async throws -> HTTPStatus{
-        guard let activity = try await Activity.find(req.parameters.require("id"), on: req.db) else {
+        
+        let payload = try req.auth.require(UserPayload.self)
+        let queryID = try req.parameters.require("id")
+        
+        guard let activityID = UUID(uuidString: queryID) else {
+            throw Abort(.badRequest, reason: "Invalid id")
+        }
+        guard let activity = try await Activity.find(activityID , on: req.db) else {
             throw Abort(.notFound, reason : "Activity not found")
         }
+        
+        guard activity.$user.id == payload.id else {
+            throw Abort(.forbidden, reason: "Cannot delete this activity")
+        }
+        
         try await activity.delete(on: req.db)
         return .noContent
     }
-   
-    
 }
 

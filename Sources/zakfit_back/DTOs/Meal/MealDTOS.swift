@@ -14,6 +14,10 @@ struct CreateMealDTO: Content {
     let picto: String
     let date: Date
     let foods: [FoodsDTO]
+    
+//    static func validations(_ validations: inout Validations) {
+//        validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
+//    }
 }
 
 struct FoodsDTO: Content {
@@ -43,18 +47,3 @@ struct MealUpdateDTO: Content {
     let date: Date?
     let foods: [FoodsDTO]?
 }
-
-
-
-//Pour calculer les totaux pour le repas, multiplier chaque nutriment par quantity / 100 :
-//totalCalories=food.calories100g×(quantity/100)
-
-//    static func validations(_ validations: inout Validations){
-//        validations.add("totalCalories", as: Double.self, is: .range(0...))
-//        validations.add("totalProteins", as: Double.self, is: .range(0...))
-//        validations.add("totalCarbs", as: Double.self, is: .range(0...))
-//        validations.add("totalFats", as: Double.self, is: .range(0...))
-//    }
-//        L'API effectue une vérification des données (par exemple, assure que les
-//        valeurs nutritionnelles sont cohérentes avec les aliments enregistrés) avant
-//        d'enregistrer le repas. A FAIRE !!!

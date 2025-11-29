@@ -19,9 +19,10 @@ struct UserController: RouteCollection  {
         let protected = users.grouped(JWTMiddleware())
         protected.get("profile", use: userProfile)
         protected.patch("profile", use: updateUserProfile)
+        protected.delete("profile", use: deleteUser)
     }
     
-    //USER PROFIL
+    //GET USER PROFIL
     @Sendable
     func userProfile(req: Request) async throws -> UserResponseDTO {
         let payload = try req.auth.require(UserPayload.self)
@@ -32,14 +33,14 @@ struct UserController: RouteCollection  {
         return user.toResponse()
     }
     
-    //GET ALL
+    //GET ALL (admin)
     @Sendable
     func getAllUsers(req: Request) async throws -> [UserResponseDTO] {
         let users = try await User.query(on: req.db).all()
         return users.map{$0.toResponse()}
     }
     
-    //GET BY ID
+    //GET BY ID (admin)
     @Sendable
     func getUserByID(req: Request) async throws -> UserResponseDTO {
         guard let user = try await User.find(req.parameters.get("id"), on: req.db) else {
@@ -74,7 +75,7 @@ struct UserController: RouteCollection  {
                 .first()
             
             if checkEmail != nil {
-                throw Abort(.badRequest, reason: "Email already in use by another user.")
+                throw Abort(.badRequest, reason: "Email already in use.")
             }
             user.email = newEmail
         }
@@ -92,5 +93,44 @@ struct UserController: RouteCollection  {
         
     }
     
-    //DELETE
+    //DELETE USER
+    @Sendable
+    func deleteUser(req: Request) async throws -> HTTPStatus {
+        
+        let payload = try req.auth.require(UserPayload.self)
+        
+        guard let user = try await User.find(payload.id, on: req.db) else {
+            throw Abort(.notFound, reason: "User not found")
+        }
+        
+        //SUPPRIME ACTIVITÉS USER
+        let activities = try await user.$activities.query(on: req.db).all()
+        for activity in activities {
+            try await activity.delete(on: req.db)
+        }
+        
+        //SUPPRIME MEALS + FOODMEALS LIÉS
+        let meals = try await user.$meals.query(on: req.db).all()
+        for meal in meals {
+            let foodMeals = try await meal.$foodMeals.query(on: req.db).all()
+            for foodMeal in foodMeals {
+                try await foodMeal.delete(on: req.db)
+            }
+            try await meal.delete(on: req.db)
+        }
+        
+        //SUPPRIME FOOD PERSO USER + FOOMEALS
+        let Userfoods = try await user.$foods.query(on: req.db).all()
+        for food in Userfoods {
+            
+            let foodMeals = try await food.$foodMeals.query(on: req.db).all()
+            for foodMeal in foodMeals {
+                try await foodMeal.delete(on: req.db)
+            }
+            try await food.delete(on: req.db)
+        }
+        
+        try await user.delete(on: req.db)
+        return .noContent
+    }
 }

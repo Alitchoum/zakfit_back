@@ -17,6 +17,8 @@ struct ActivityDTO: Content, Validatable {
     static func validations(_ validations: inout Validations) {
         validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
         validations.add("caloriesBurned", as: Int.self, is : .range(0...2000))
+        validations.add("date", as: Date.self)
+        validations.add("categoryId", as: UUID.self)
     }
 }
 
@@ -28,11 +30,18 @@ struct ActivityResponseDTO: Content {
     let categoryId: UUID
 }
 
-struct ActivityUpdateDTO: Content {
+struct ActivityUpdateDTO: Content, Validatable {
     let duration: Int?
     let caloriesBurned: Int?
     let categoryId: UUID?
     let date: Date?
+    
+    static func validations(_ validations: inout Validations) {
+        validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
+        validations.add("caloriesBurned", as: Int.self, is : .range(0...2000))
+        validations.add("date", as: Date.self)
+        validations.add("categoryId", as: UUID.self)
+    }
 }
 
 extension ActivityDTO {
