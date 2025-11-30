@@ -13,6 +13,7 @@ struct CategoryActivitiesController: RouteCollection {
         let categoryactivities = routes.grouped("categoryactivities")
         
         categoryactivities.post(use: createCategory)
+        categoryactivities.get(use: getAll)
     }
     
     //CREATE
@@ -26,6 +27,15 @@ struct CategoryActivitiesController: RouteCollection {
         )
         try await category.save(on: req.db)
         return category.toResponse()
+    }
+    
+    //GET ALL
+    @Sendable
+    func getAll(req: Request) async throws -> [CategoryActivityResponseDTO] {
+        
+        let categories: [CategoryActivity] = try await CategoryActivity.query(on: req.db).all()
+        
+        return categories.map{$0.toResponse()}
     }
     
     //AJOUTER AUTRES ROUTES PLUS TARD (en dur)

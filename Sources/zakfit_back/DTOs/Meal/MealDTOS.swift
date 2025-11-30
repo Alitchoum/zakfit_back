@@ -14,10 +14,6 @@ struct CreateMealDTO: Content {
     let picto: String
     let date: Date
     let foods: [FoodsDTO]
-    
-//    static func validations(_ validations: inout Validations) {
-//        validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
-//    }
 }
 
 struct FoodsDTO: Content {
