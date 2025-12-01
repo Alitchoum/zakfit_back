@@ -16,15 +16,15 @@ struct MealController: RouteCollection {
         protected.post("current", use: createMeal)
         protected.get("current", use: getUserMeals)
         protected.delete("current", ":id", use: deleteMeal)
+        protected.post(":mealID", "foods", use: addFoodToMeal)
     }
     
+
     // CREATE USER MEAL
     @Sendable
     func createMeal(req: Request) async throws -> MealResponseDTO {
-
-        let payload = try req.auth.require(UserPayload.self)
         
-        //try CreateMealDTO.validate(content: req)
+        let payload = try req.auth.require(UserPayload.self)
         let dto = try req.content.decode(CreateMealDTO.self)
         
         let meal = Meal(
@@ -38,46 +38,49 @@ struct MealController: RouteCollection {
         )
         try await meal.save(on: req.db)
         
-        var totalCalories: Double = 0
-        var totalProteins: Double = 0
-        var totalCarbs: Double = 0
-        var totalFats: Double = 0
-        
-        // Parcours  aliments pour créer les FoodMeals
-        for foodDTO in dto.foods {
-            guard let food = try await Food.find(foodDTO.id, on: req.db) else {
-                throw Abort(.notFound, reason: "Food not found")
-            }
-            
-            let foodMeal = FoodMeal(
-                quantity: foodDTO.quantity,
-                mealID: try meal.requireID(),
-                foodID: try food.requireID()
-            )
-            try await foodMeal.save(on: req.db)
-            
-            // Calcul des totaux en fonction de la quantité
-            totalCalories += food.calories100g *  Double(foodDTO.quantity / 100)
-            totalProteins += food.proteins100g * Double(foodDTO.quantity / 100)
-            totalCarbs += food.carbs100g * Double(foodDTO.quantity / 100)
-            totalFats += food.fats100g * Double(foodDTO.quantity / 100)
-        }
-        
-        // Mise à jour des totaux dans le meal
-        meal.totalCalories = totalCalories
-        meal.totalProteins = totalProteins
-        meal.totalCarbs = totalCarbs
-        meal.totalFats = totalFats
-        try await meal.update(on: req.db)
-        
-        // Charger les aliments associés pour renvoyer la réponse complète
-        try await meal.$foodMeals.load(on: req.db)
-        for foodMeal in meal.foodMeals {
-            try await foodMeal.$food.load(on: req.db)
-        }
         return meal.toResponse()
     }
-
+    
+    // ADD FOOD TO MEAL
+    @Sendable
+    func addFoodToMeal(req: Request) async throws -> MealResponseDTO {
+        let payload = try req.auth.require(UserPayload.self)
+        let mealID = try req.parameters.require("mealID", as: UUID.self)
+        let dto = try req.content.decode(AddFoodToMealDTO.self)
+        
+        guard let meal = try await Meal.query(on: req.db)
+            .filter(\.$id == mealID)
+            .filter(\.$user.$id == payload.id)
+            .first() else {
+            throw Abort(.notFound, reason: "Meal not found")
+        }
+        
+        guard let food = try await Food.find(dto.foodID, on: req.db) else {
+            throw Abort(.notFound, reason: "Food not found")
+        }
+        
+        let foodMeal = FoodMeal(
+            quantity: dto.quantity,
+            mealID: try meal.requireID(),
+            foodID: try food.requireID()
+        )
+        try await foodMeal.save(on: req.db)
+        
+        // recalcul des totaux
+        meal.totalCalories += food.calories100g * Double(dto.quantity) / 100
+        meal.totalProteins += food.proteins100g * Double(dto.quantity) / 100
+        meal.totalCarbs += food.carbs100g * Double(dto.quantity) / 100
+        meal.totalFats += food.fats100g * Double(dto.quantity) / 100
+        try await meal.update(on: req.db)
+        
+        try await meal.$foodMeals.load(on: req.db)
+        for fm in meal.foodMeals {
+            try await fm.$food.load(on: req.db)
+        }
+        
+        return meal.toResponse()
+    }
+    
     //GET USER MEALS
     @Sendable
     func getUserMeals(req: Request) async throws -> [MealResponseDTO] {
@@ -90,13 +93,12 @@ struct MealController: RouteCollection {
         return meals.map{$0.toResponse()}
     }
     
-    //DELETE USER MEAL
+    // DELETE USER MEAL
     @Sendable
     func deleteMeal(req: Request) async throws -> HTTPStatus {
-       
         let payload = try req.auth.require(UserPayload.self)
         let queryID = try req.parameters.require("id")
-      
+        
         guard let mealID = UUID(uuidString: queryID) else {
             throw Abort(.notFound, reason: "Invalid ID")
         }
@@ -104,18 +106,19 @@ struct MealController: RouteCollection {
         guard let meal = try await Meal.query(on: req.db)
             .filter(\.$id == mealID)
             .filter(\.$user.$id == payload.id)
-            .first()
-        else {
+            .first() else {
             throw Abort(.notFound, reason: "Meal not found")
         }
-        //SUPPRIME FOODMEALS LIÉs
-       let foodMeal = try await meal.$foodMeals.query(on: req.db).all()
-            for foodMeal in foodMeal {
-            try await foodMeal.delete(on: req.db)
+        
+        let foodMeals = try await meal.$foodMeals.query(on: req.db).all()
+        for fm in foodMeals {
+            try await fm.delete(on: req.db)
         }
+        
         try await meal.delete(on: req.db)
         return .noContent
     }
     
-    //UPDATE USER MEAL 
+    //UPDATE USER MEAL
 }
+

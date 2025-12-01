@@ -66,7 +66,6 @@ final class Meal: Model, Content, @unchecked Sendable {
         MealResponseDTO(
             id: self.id,
             type : self.type,
-            image: self.image,
             totalCalories: self.totalCalories,
             totalProteins : self.totalProteins,
             totalCarbs: self.totalCarbs,

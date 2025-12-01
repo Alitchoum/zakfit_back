@@ -14,7 +14,8 @@ struct FoodMealController: RouteCollection {
         
         let protected = foodMeals.grouped(JWTMiddleware())
         protected.post("current", use: createFoodMeal)
-        
+        protected.patch("current", use: updateFoodMeal)
+        protected.delete("current", use: deleteFoodMeal)
     }
     
     //CREATE FOOD MEAL BY USER
