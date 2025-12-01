@@ -36,6 +36,7 @@ struct ActivityController: RouteCollection {
         }
         
         try await activity.save(on: req.db)
+        try await activity.$category.load(on: req.db)
         return activity.toResponse()
     }
     
@@ -47,6 +48,7 @@ struct ActivityController: RouteCollection {
         
         var query = Activity.query(on: req.db)
             .filter(\.$user.$id == payload.id)
+            .with(\.$category)
         
         //FILTERED BY DURATION (min)
         if let durationFilter = try? req.query.get(String.self, at: "durationFilter"){

@@ -11,7 +11,6 @@ import Vapor
 struct CreateMealDTO: Content {
     let type: String
     let image: String?
-    let picto: String
     let date: Date
     let foods: [FoodsDTO]
 }
@@ -26,7 +25,6 @@ struct MealResponseDTO: Content {
     let id: UUID?
     let type: String
     let image: String?
-    let picto: String
     let totalCalories: Double
     let totalProteins: Double
     let totalCarbs: Double
@@ -39,7 +37,6 @@ struct MealUpdateDTO: Content {
     
     let type: String?
     let image: String?
-    let picto: String?
     let date: Date?
     let foods: [FoodsDTO]?
 }

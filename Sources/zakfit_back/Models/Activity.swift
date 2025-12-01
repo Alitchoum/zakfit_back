@@ -46,7 +46,10 @@ final class Activity: Model, Content, @unchecked Sendable {
             duration: self.duration,
             caloriesBurned: self.caloriesBurned,
             date: self.date,
-            categoryId: self.$category.id
+            categoryId: self.$category.id,
+            categoryName: self.category.name,
+            categoryPicto: self.category.picto,
+            categoryColor: self.category.color
         )
     }
 }

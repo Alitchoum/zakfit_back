@@ -17,7 +17,7 @@ struct CreateFood: AsyncMigration {
             .field("carbs_100g", .double, .required)
             .field("fats_100g", .double, .required)
             .field("proteins_100g", .double, .required)
-            .field("is_auto", .bool, .sql(.default(false)))
+            .field("is_custom", .bool, .sql(.default(false)))
             .field("user_id", .uuid, .references("users", "id"))
             .field("food_category_id", .uuid, .references("food_categories", "id"))
             .create()

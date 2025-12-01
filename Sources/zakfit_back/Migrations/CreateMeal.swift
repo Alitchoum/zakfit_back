@@ -14,7 +14,6 @@ struct CreateMeal: AsyncMigration {
             .id()
             .field("type", .string, .required)
             .field("image", .string)
-            .field("picto", .string, .required)
             .field("total_calories", .double, .required)
             .field("total_proteins", .double, .required)
             .field("total_carbs", .double, .required)

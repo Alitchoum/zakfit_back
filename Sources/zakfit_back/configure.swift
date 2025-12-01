@@ -33,7 +33,6 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateMeal())
     app.migrations.add(CreateFoodMeal())
     
-    
     try await app.autoMigrate()
     try routes(app)
 }

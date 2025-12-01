@@ -20,9 +20,6 @@ final class Meal: Model, Content, @unchecked Sendable {
     @OptionalField(key: "image")
     var image: String?
     
-    @Field(key: "picto")
-    var picto: String
-    
     @Field(key: "total_calories")
     var totalCalories: Double
     
@@ -53,11 +50,10 @@ final class Meal: Model, Content, @unchecked Sendable {
         
     init() {}
     
-    init(type: String, image: String? = nil, picto: String, totalCalories: Double, totalProteins: Double, totalCarbs: Double, totalFats: Double, date: Date, userID: UUID)
+    init(type: String, image: String? = nil, totalCalories: Double, totalProteins: Double, totalCarbs: Double, totalFats: Double, date: Date, userID: UUID)
     {
         self.type = type
         self.image = image
-        self.picto = picto
         self.totalCalories = totalCalories
         self.totalProteins = totalProteins
         self.totalCarbs = totalCarbs
@@ -71,7 +67,6 @@ final class Meal: Model, Content, @unchecked Sendable {
             id: self.id,
             type : self.type,
             image: self.image,
-            picto: self.picto,
             totalCalories: self.totalCalories,
             totalProteins : self.totalProteins,
             totalCarbs: self.totalCarbs,

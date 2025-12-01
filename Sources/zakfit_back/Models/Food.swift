@@ -29,8 +29,8 @@ final class Food: Model, Content, @unchecked Sendable {
     @Field(key: "proteins_100g")
     var proteins100g: Double
     
-    @Field(key: "is_auto")
-    var isAuto: Bool
+    @Field(key: "is_custom")
+    var isCustom: Bool
     
     // MARK: - Relations
     
@@ -49,14 +49,14 @@ final class Food: Model, Content, @unchecked Sendable {
     
     init() {}
     
-    init(name: String, calories100g: Double, carbs100g: Double, fats100g: Double, proteins100g: Double, isAuto: Bool, userID: UUID? = nil , foodCategoryID: UUID)
+    init(name: String, calories100g: Double, carbs100g: Double, fats100g: Double, proteins100g: Double, isCustom: Bool, userID: UUID? = nil , foodCategoryID: UUID)
     {
         self.name = name
         self.calories100g = calories100g
         self.carbs100g = carbs100g
         self.fats100g = fats100g
         self.proteins100g = proteins100g
-        self.isAuto = isAuto
+        self.isCustom = isCustom
         self.$user.id = userID
         self.$foodCategory.id = foodCategoryID
     }
@@ -69,7 +69,7 @@ final class Food: Model, Content, @unchecked Sendable {
             carbs100g: self.carbs100g,
             fats100g: self.fats100g,
             proteins100g: self.proteins100g,
-            isAuto: self.isAuto,
+            isCustom: self.isCustom,
             userID: self.$user.id,
             foodCategoryID: self.$foodCategory.id
         )

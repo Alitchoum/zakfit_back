@@ -20,6 +20,7 @@ struct FoodController: RouteCollection {
         let protected = foods.grouped(JWTMiddleware())
         protected.post("current", use: createUserFood)
         protected.patch("current", ":foodID", use: updateUserFood)
+        protected.get("current", use: getAllForCurrentUser)
     }
     
     //CREATE GLOBAL (admin)
@@ -33,7 +34,7 @@ struct FoodController: RouteCollection {
             carbs100g: dto.carbs100g,
             fats100g: dto.fats100g,
             proteins100g: dto.proteins100g,
-            isAuto: dto.isAuto,
+            isCustom: dto.isCustom,
             userID: dto.userID,
             foodCategoryID: dto.foodCategoryID
         )
@@ -49,17 +50,25 @@ struct FoodController: RouteCollection {
         
         let dto = try req.content.decode(CreateFoodDTO.self)
         
+        //verif si categorie existe
+        guard let _ = try await FoodCategory.find(dto.foodCategoryID, on: req.db) else {
+            throw Abort(.badRequest, reason: "Category not found")
+        }
+        
         let food = Food(
             name: dto.name,
             calories100g: dto.calories100g,
             carbs100g: dto.carbs100g,
             fats100g: dto.fats100g,
             proteins100g: dto.proteins100g,
-            isAuto: dto.isAuto,
+            isCustom: dto.isCustom,
             userID: payload.id,
             foodCategoryID: dto.foodCategoryID
         )
+        
         try await food.save(on: req.db)
+        try await food.$foodCategory.load(on: req.db)
+        
         return food.toResponse()
     }
     
@@ -70,6 +79,22 @@ struct FoodController: RouteCollection {
         return foods.map {$0.toResponse()}
     }
     
+    
+    //GET ALL/HIS FOODS FOR USER FOODS
+    @Sendable
+    func getAllForCurrentUser (req: Request) async throws -> [FoodResponseDTO] {
+        let payload = try req.auth.require(UserPayload.self)
+
+         let foods = try await Food.query(on: req.db)
+             .group(.or) { builder in
+                 builder.filter(\.$user.$id == nil)       // global foods
+                 builder.filter(\.$user.$id == payload.id) // user's custom foods
+             }
+             .all()
+
+         return foods.map { $0.toResponse() }
+     }
+
     //UPDATE BY USER
     @Sendable
     func updateUserFood(req: Request) async throws -> FoodResponseDTO {
@@ -89,7 +114,7 @@ struct FoodController: RouteCollection {
         if let calories100g = updateData.calories100g {food.calories100g = calories100g }
         if let carbs100g = updateData.carbs100g {food.carbs100g = carbs100g }
         if let fats100g = updateData.fats100g {food.fats100g = fats100g}
-        if let isAuto = updateData.isAuto {food.isAuto = isAuto }
+        if let isCustom = updateData.isCustom {food.isCustom = isCustom }
         if let foodCategoryID = updateData.foodCategoryID {food.$foodCategory.id = foodCategoryID}
         
         try await food.update(on: req.db)
@@ -114,7 +139,7 @@ struct FoodController: RouteCollection {
         if let calories100g = updateData.calories100g {food.calories100g = calories100g }
         if let carbs100g = updateData.carbs100g {food.carbs100g = carbs100g }
         if let fats100g = updateData.fats100g {food.fats100g = fats100g}
-        if let isAuto = updateData.isAuto {food.isAuto = isAuto }
+        if let isCustom = updateData.isCustom {food.isCustom = isCustom }
         if let foodCategoryID = updateData.foodCategoryID {food.$foodCategory.id = foodCategoryID}
         
         try await food.update(on: req.db)

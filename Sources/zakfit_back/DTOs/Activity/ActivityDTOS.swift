@@ -15,7 +15,7 @@ struct ActivityDTO: Content, Validatable {
     let categoryId: UUID
     
     static func validations(_ validations: inout Validations) {
-        validations.add("duration", as: Int.self, is : .range(1...360)) //6H max
+        validations.add("duration", as: Int.self, is : .range(1...360)) //6h max
         validations.add("caloriesBurned", as: Int.self, is : .range(0...2000))
         validations.add("date", as: Date.self)
         validations.add("categoryId", as: UUID.self)
@@ -27,7 +27,12 @@ struct ActivityResponseDTO: Content {
     let duration: Int
     let caloriesBurned: Int
     let date: Date
+   
+    
     let categoryId: UUID
+    let categoryName: String
+    let categoryPicto: String
+    let categoryColor: String
 }
 
 struct ActivityUpdateDTO: Content, Validatable {

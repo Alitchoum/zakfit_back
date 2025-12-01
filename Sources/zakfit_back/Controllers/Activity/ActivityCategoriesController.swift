@@ -23,7 +23,9 @@ struct CategoryActivitiesController: RouteCollection {
         
         let category = CategoryActivity(
             name: dto.name,
-            picto: dto.picto
+            picto: dto.picto,
+            color: dto.color,
+            indexOrder: dto.indexOrder
         )
         try await category.save(on: req.db)
         return category.toResponse()
@@ -33,7 +35,9 @@ struct CategoryActivitiesController: RouteCollection {
     @Sendable
     func getAll(req: Request) async throws -> [CategoryActivityResponseDTO] {
         
-        let categories: [CategoryActivity] = try await CategoryActivity.query(on: req.db).all()
+        let categories: [CategoryActivity] = try await CategoryActivity.query(on: req.db)
+            .sort(\.$indexOrder, .ascending)
+            .all()
         
         return categories.map{$0.toResponse()}
     }

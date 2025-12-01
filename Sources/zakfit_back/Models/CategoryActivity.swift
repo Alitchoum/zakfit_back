@@ -20,6 +20,12 @@ final class CategoryActivity: Model, Content, @unchecked Sendable {
     @Field(key: "picto")
     var picto : String
     
+    @Field(key: "color")
+    var color : String
+    
+    @Field(key: "index_order")
+    var indexOrder: Int
+    
     // MARK: - Relation
     
     @Children(for: \.$category)
@@ -27,17 +33,21 @@ final class CategoryActivity: Model, Content, @unchecked Sendable {
     
     init() {}
     
-    init(name: String, picto: String)
+    init(name: String, picto: String, color: String, indexOrder: Int)
     {
         self.name = name
         self.picto = picto
+        self.color = color
+        self.indexOrder = indexOrder
     }
     
     func toResponse() -> CategoryActivityResponseDTO {
         CategoryActivityResponseDTO(
             id: self.id,
             name: self.name,
-            picto: self.picto
+            picto: self.picto,
+            color: self.color,
+            indexOrder: self.indexOrder
         )
     }
 }

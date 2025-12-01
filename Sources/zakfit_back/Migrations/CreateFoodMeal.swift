@@ -12,7 +12,7 @@ struct CreateFoodMeal: AsyncMigration {
         try await db.schema(FoodMeal.schema)
         
             .id()
-            .field("quantity", .string, .required)
+            .field("quantity", .int, .required)
             .field("meal_id", .uuid, .required, .references("meals", "id"))
             .field("food_id", .uuid, .required, .references("foods", "id"))
             .create()

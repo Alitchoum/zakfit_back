@@ -29,7 +29,6 @@ struct MealController: RouteCollection {
         
         let meal = Meal(
             type: dto.type,
-            picto: dto.picto,
             totalCalories: 0,
             totalProteins: 0,
             totalCarbs: 0,

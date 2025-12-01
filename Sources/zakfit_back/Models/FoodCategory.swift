@@ -19,7 +19,7 @@ final class FoodCategory: Model, Content, @unchecked Sendable {
     
     @Field(key: "picto")
     var picto: String
-    
+        
     // MARK: - Relation
     @Children(for: \.$foodCategory)
     var foods: [Food]
@@ -34,7 +34,7 @@ final class FoodCategory: Model, Content, @unchecked Sendable {
         FoodCategoryResponseDTO(
             id: id.self,
             name: self.name,
-            picto: self.picto
+            picto: self.picto,
         )
     }
 }

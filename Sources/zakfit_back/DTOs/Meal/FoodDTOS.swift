@@ -14,7 +14,17 @@ struct CreateFoodDTO: Content {
     let carbs100g: Double
     let fats100g: Double
     let proteins100g: Double
-    let isAuto: Bool
+    let isCustom: Bool
+    let userID: UUID?
+    let foodCategoryID: UUID
+}
+
+struct CreateUserFoodDTO: Content {
+    let name: String
+    let calories100g: Double
+    let carbs100g: Double
+    let fats100g: Double
+    let proteins100g: Double
     let userID: UUID?
     let foodCategoryID: UUID
 }
@@ -26,10 +36,12 @@ struct FoodResponseDTO: Content {
     let carbs100g: Double
     let fats100g: Double
     let proteins100g: Double
-    let isAuto: Bool
+    let isCustom: Bool
     let userID: UUID?
     let foodCategoryID: UUID
 }
+
+
 
 struct FoodUpdateDTO: Content {
     let name: String?
@@ -37,7 +49,7 @@ struct FoodUpdateDTO: Content {
     let carbs100g: Double?
     let fats100g: Double?
     let proteins100g: Double?
-    let isAuto: Bool?
+    let isCustom: Bool?
     let foodCategoryID: UUID?
 }
 

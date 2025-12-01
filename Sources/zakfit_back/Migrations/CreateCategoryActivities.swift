@@ -15,6 +15,8 @@ struct CreateCategoryActivities: AsyncMigration {
             .id()
             .field("name", .string, .required)
             .field("picto", .string, .required)
+            .field("color", .string, .required)
+            .field("index_order", .int, .required)
             .create()
     }
     func revert(on db: any Database) async throws {
