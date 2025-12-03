@@ -27,5 +27,3 @@ struct PhysicalGoalUpdateDTO: Content {
     let frequency: Int?
     let caloriesBurned: Double?
 }
-
-//Ajouter func toModel()

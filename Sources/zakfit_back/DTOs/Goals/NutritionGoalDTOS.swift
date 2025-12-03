@@ -33,6 +33,3 @@ struct NutritionGoalUpdateDTO: Content {
     let fatsTarget: Double?
     let isAuto: Bool?
 }
-
-//Ajouter func toModel()
-

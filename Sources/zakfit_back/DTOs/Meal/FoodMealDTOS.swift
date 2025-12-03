@@ -38,5 +38,3 @@ struct FoodMealUpdateDTO: Content, Validatable {
         validations.add("foodID", as: UUID.self)
     }
 }
-
-//Ajouter func toModel()

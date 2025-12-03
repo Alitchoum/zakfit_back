@@ -50,7 +50,7 @@ struct FoodController: RouteCollection {
         
         let dto = try req.content.decode(CreateFoodDTO.self)
         
-        //verif si categorie existe
+        //verif si cat existe
         guard let _ = try await FoodCategory.find(dto.foodCategoryID, on: req.db) else {
             throw Abort(.badRequest, reason: "Category not found")
         }
@@ -80,7 +80,7 @@ struct FoodController: RouteCollection {
     }
     
     
-    //GET ALL/HIS FOODS FOR USER FOODS
+    //GET ALL/HIS FOODS -> USER
     @Sendable
     func getAllForCurrentUser (req: Request) async throws -> [FoodResponseDTO] {
         let payload = try req.auth.require(UserPayload.self)
@@ -88,7 +88,7 @@ struct FoodController: RouteCollection {
          let foods = try await Food.query(on: req.db)
              .group(.or) { builder in
                  builder.filter(\.$user.$id == nil)       // global foods
-                 builder.filter(\.$user.$id == payload.id) // user's custom foods
+                 builder.filter(\.$user.$id == payload.id) // user custom foods
              }
              .all()
 

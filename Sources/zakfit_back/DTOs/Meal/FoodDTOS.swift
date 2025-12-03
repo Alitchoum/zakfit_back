@@ -52,5 +52,3 @@ struct FoodUpdateDTO: Content {
     let isCustom: Bool?
     let foodCategoryID: UUID?
 }
-
-//Ajouter func toModel()

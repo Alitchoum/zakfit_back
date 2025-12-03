@@ -23,5 +23,3 @@ struct FoodCategoryUpdateDTO: Content{
     let name: String?
     let picto: String?
 }
-
-//Ajouter func toModel()

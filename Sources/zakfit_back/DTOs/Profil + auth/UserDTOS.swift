@@ -38,6 +38,3 @@ struct UserUpdateDTO: Content, Validatable {
         validations.add("password", as: String.self, is: .count(8...), required: false)
     }
 }
-
-//Ajouter func toModel()
-

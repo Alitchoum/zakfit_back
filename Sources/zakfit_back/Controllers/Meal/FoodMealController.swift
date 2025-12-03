@@ -27,7 +27,7 @@ struct FoodMealController: RouteCollection {
         try CreateFoodMealDTO.validate(content: req)
         let dto = try req.content.decode(CreateFoodMealDTO.self)
         
-        // Vérifie que le meal appartient à l'user
+        //verif foodMeal => user
         guard let meal = try await Meal.find(dto.mealID, on: req.db),
               meal.$user.id == payload.id else {
             throw Abort(.forbidden, reason: "You cannot add foods to this meal")
@@ -66,7 +66,7 @@ struct FoodMealController: RouteCollection {
         else {
             throw Abort(.notFound, reason: "Food meal not found")
         }
-        //verif foodMeal appartient bien à user
+        //verif foodMeal => user
         guard foodMeal.meal.$user.id == payload.id else {
             throw Abort(.notFound, reason: "Cannot update this food meal")
         }

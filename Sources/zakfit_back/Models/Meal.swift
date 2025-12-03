@@ -42,12 +42,12 @@ final class Meal: Model, Content, @unchecked Sendable {
     
     //lien avec table pivot -> acces quantité
     @Children(for: \.$meal)
-       var foodMeals: [FoodMeal]
+    var foodMeals: [FoodMeal]
     
     //créer lien table food vers table meal via table food_meal - lien aliments contenus dans un repas
     @Siblings(through: FoodMeal.self, from: \.$meal, to: \.$food)
     var foods: [Food]
-        
+    
     init() {}
     
     init(type: String, image: String? = nil, totalCalories: Double, totalProteins: Double, totalCarbs: Double, totalFats: Double, date: Date, userID: UUID)
@@ -62,16 +62,42 @@ final class Meal: Model, Content, @unchecked Sendable {
         self.$user.id = userID
     }
     
-    func toResponse() -> MealResponseDTO{
-        MealResponseDTO(
+    func toResponse() -> MealResponseDTO {
+        return MealResponseDTO(
             id: self.id,
-            type : self.type,
+            type: self.type,
             totalCalories: self.totalCalories,
-            totalProteins : self.totalProteins,
+            totalProteins: self.totalProteins,
             totalCarbs: self.totalCarbs,
-            totalFats : self.totalFats,
-            date : self.date,
-            userId : self.$user.id
+            totalFats: self.totalFats,
+            date: self.date,
+            userId: self.$user.id
+        )
+    }
+    
+    func toMealWithFoodsResponse() -> MealWithFoodsResponseDTO {
+        let foodItems = self.foodMeals.map { fm in
+            FoodInMealResponseDTO(
+                id: fm.id!,
+                name: fm.food.name,
+                quantity: fm.quantity,
+                calories: fm.food.calories100g * Double(fm.quantity) / 100,
+                carbs: fm.food.carbs100g * Double(fm.quantity) / 100,
+                proteins: fm.food.proteins100g * Double(fm.quantity) / 100,
+                fats: fm.food.fats100g * Double(fm.quantity) / 100
+            )
+        }
+        
+        return MealWithFoodsResponseDTO(
+            id: self.id,
+            type: self.type,
+            totalCalories: self.totalCalories,
+            totalProteins: self.totalProteins,
+            totalCarbs: self.totalCarbs,
+            totalFats: self.totalFats,
+            date: self.date,
+            userId: self.$user.id,
+            foods: foodItems
         )
     }
 }

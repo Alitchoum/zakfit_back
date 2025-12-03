@@ -9,21 +9,20 @@ import Vapor
 import Fluent
 
 struct MealController: RouteCollection {
-    func boot(routes: any RoutesBuilder){
+    func boot(routes: any RoutesBuilder) {
         let meals = routes.grouped("meals")
         let protected = meals.grouped(JWTMiddleware())
         
         protected.post("current", use: createMeal)
         protected.get("current", use: getUserMeals)
-        protected.delete("current", ":id", use: deleteMeal)
         protected.post(":mealID", "foods", use: addFoodToMeal)
+        protected.get(":mealID", use: getMealDetails)
+        protected.delete("current", ":id", use: deleteMeal)
     }
     
-
-    // CREATE USER MEAL
+    // CREATE MEAL
     @Sendable
-    func createMeal(req: Request) async throws -> MealResponseDTO {
-        
+    func createMeal(req: Request) async throws -> MealWithFoodsResponseDTO {
         let payload = try req.auth.require(UserPayload.self)
         let dto = try req.content.decode(CreateMealDTO.self)
         
@@ -38,12 +37,16 @@ struct MealController: RouteCollection {
         )
         try await meal.save(on: req.db)
         
-        return meal.toResponse()
+        try await meal.$foodMeals.load(on: req.db)
+        for fm in meal.foodMeals {
+            try await fm.$food.load(on: req.db)
+        }
+        return meal.toMealWithFoodsResponse()
     }
     
     // ADD FOOD TO MEAL
     @Sendable
-    func addFoodToMeal(req: Request) async throws -> MealResponseDTO {
+    func addFoodToMeal(req: Request) async throws -> MealWithFoodsResponseDTO {
         let payload = try req.auth.require(UserPayload.self)
         let mealID = try req.parameters.require("mealID", as: UUID.self)
         let dto = try req.content.decode(AddFoodToMealDTO.self)
@@ -51,7 +54,8 @@ struct MealController: RouteCollection {
         guard let meal = try await Meal.query(on: req.db)
             .filter(\.$id == mealID)
             .filter(\.$user.$id == payload.id)
-            .first() else {
+            .first()
+        else {
             throw Abort(.notFound, reason: "Meal not found")
         }
         
@@ -73,24 +77,62 @@ struct MealController: RouteCollection {
         meal.totalFats += food.fats100g * Double(dto.quantity) / 100
         try await meal.update(on: req.db)
         
+        // charger relations avant le retour
         try await meal.$foodMeals.load(on: req.db)
         for fm in meal.foodMeals {
             try await fm.$food.load(on: req.db)
         }
         
-        return meal.toResponse()
+        return meal.toMealWithFoodsResponse()
     }
     
-    //GET USER MEALS
+    // GET USER MEALS BY DAY
     @Sendable
-    func getUserMeals(req: Request) async throws -> [MealResponseDTO] {
+    func getUserMeals(req: Request) async throws -> [MealWithFoodsResponseDTO] {
         let payload = try req.auth.require(UserPayload.self)
+        
+        let today = Date()
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: today)
+        let todayEnd = calendar.date(byAdding: .day, value: 1, to: todayStart)
         
         let meals = try await Meal.query(on: req.db)
             .filter(\.$user.$id == payload.id)
+            .filter(\.$date >= todayStart)
+            .filter(\.$date < todayEnd!)
             .all()
         
-        return meals.map{$0.toResponse()}
+        // charger relations pour chaque meal
+        for meal in meals {
+            try await meal.$foodMeals.load(on: req.db)
+            for foodMeal in meal.foodMeals {
+                try await foodMeal.$food.load(on: req.db)
+            }
+        }
+        
+        return meals.map { $0.toMealWithFoodsResponse() }
+    }
+    
+    // GET MEAL DETAILS
+    @Sendable
+    func getMealDetails(req: Request) async throws -> MealWithFoodsResponseDTO {
+        let payload = try req.auth.require(UserPayload.self)
+        let mealID = try req.parameters.require("mealID", as: UUID.self)
+        
+        guard let meal = try await Meal.query(on: req.db)
+            .filter(\.$id == mealID)
+            .filter(\.$user.$id == payload.id)
+            .first()
+        else {
+            throw Abort(.notFound, reason: "Meal not found")
+        }
+        
+        try await meal.$foodMeals.load(on: req.db)
+        for fm in meal.foodMeals {
+            try await fm.$food.load(on: req.db)
+        }
+        
+        return meal.toMealWithFoodsResponse()
     }
     
     // DELETE USER MEAL
@@ -118,7 +160,4 @@ struct MealController: RouteCollection {
         try await meal.delete(on: req.db)
         return .noContent
     }
-    
-    //UPDATE USER MEAL
 }
-
