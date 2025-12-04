@@ -76,18 +76,18 @@ final class Meal: Model, Content, @unchecked Sendable {
     }
     
     func toMealWithFoodsResponse() -> MealWithFoodsResponseDTO {
-        let foodItems = self.foodMeals.map { fm in
+        let foodItems = self.foodMeals.map { foodMeal in
             FoodInMealResponseDTO(
-                id: fm.id!,
-                name: fm.food.name,
-                quantity: fm.quantity,
-                calories: fm.food.calories100g * Double(fm.quantity) / 100,
-                carbs: fm.food.carbs100g * Double(fm.quantity) / 100,
-                proteins: fm.food.proteins100g * Double(fm.quantity) / 100,
-                fats: fm.food.fats100g * Double(fm.quantity) / 100
+                id: foodMeal.id!,
+                name: foodMeal.food.name,
+                quantity: foodMeal.quantity,
+                calories: foodMeal.food.calories100g * Double(foodMeal.quantity) / 100,
+                carbs: foodMeal.food.carbs100g * Double(foodMeal.quantity) / 100,
+                proteins: foodMeal.food.proteins100g * Double(foodMeal.quantity) / 100,
+                fats: foodMeal.food.fats100g * Double(foodMeal.quantity) / 100
             )
         }
-        
+
         return MealWithFoodsResponseDTO(
             id: self.id,
             type: self.type,

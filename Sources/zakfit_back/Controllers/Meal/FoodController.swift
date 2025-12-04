@@ -21,6 +21,7 @@ struct FoodController: RouteCollection {
         protected.post("current", use: createUserFood)
         protected.patch("current", ":foodID", use: updateUserFood)
         protected.get("current", use: getAllForCurrentUser)
+        protected.delete("current", ":foodID", use: deleteUserFood)
     }
     
     //CREATE GLOBAL (admin)
@@ -84,24 +85,24 @@ struct FoodController: RouteCollection {
     @Sendable
     func getAllForCurrentUser (req: Request) async throws -> [FoodResponseDTO] {
         let payload = try req.auth.require(UserPayload.self)
-
-         let foods = try await Food.query(on: req.db)
-             .group(.or) { builder in
-                 builder.filter(\.$user.$id == nil)       // global foods
-                 builder.filter(\.$user.$id == payload.id) // user custom foods
-             }
-             .all()
-
-         return foods.map { $0.toResponse() }
-     }
-
+        
+        let foods = try await Food.query(on: req.db)
+            .group(.or) { builder in
+                builder.filter(\.$user.$id == nil)       // global foods
+                builder.filter(\.$user.$id == payload.id) // user custom foods
+            }
+            .all()
+        
+        return foods.map { $0.toResponse() }
+    }
+    
     //UPDATE BY USER
     @Sendable
     func updateUserFood(req: Request) async throws -> FoodResponseDTO {
         
         let payload = try req.auth.require(UserPayload.self)
         let foodID = try req.parameters.require("foodID", as: UUID.self)
-
+        
         guard let food = try await Food.query(on: req.db)
             .filter(\.$id == foodID)
             .filter(\.$user.$id == payload.id)
@@ -119,14 +120,14 @@ struct FoodController: RouteCollection {
         
         try await food.update(on: req.db)
         return food.toResponse()
-        }
+    }
     
     //UPDATE GLOBAL
     @Sendable
     func updateFood(req: Request) async throws -> FoodResponseDTO {
         
         let foodID = try req.parameters.require("foodID", as: UUID.self)
-
+        
         guard let food = try await Food.query(on: req.db)
             .filter(\.$id == foodID)
             .filter(\.$user.$id == nil)
@@ -146,6 +147,25 @@ struct FoodController: RouteCollection {
         return food.toResponse()
     }
     
-    //DELETE GLOBAL
     //DELETE USER FOOD
+    @Sendable
+    func deleteUserFood(req: Request) async throws -> HTTPStatus {
+        
+        let payload = try req.auth.require(UserPayload.self)
+        
+        let queryID = try req.parameters.require("id")
+        guard let foodID = UUID(uuidString: queryID) else {
+            throw Abort(.notFound, reason: "Invalid ID")
+        }
+        guard let food = try await Food.query(on: req.db)
+            .filter(\.$id == foodID)
+            .filter(\.$user.$id == payload.id)
+            .first() else {
+            throw Abort(.notFound, reason: "Food not found")
+        }
+        
+        try await food.delete(on: req.db)
+        return .noContent
+    }
 }
+
