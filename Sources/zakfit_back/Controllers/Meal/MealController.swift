@@ -18,7 +18,6 @@ struct MealController: RouteCollection {
         protected.post(":mealID", "foods", use: addFoodToMeal)
         protected.get(":mealID", use: getMealDetails)
         protected.delete("current", ":id", use: deleteMeal)
-        protected.delete(":mealID", "foods", ":foodMealID", use: deleteFoodToMeal)
     }
     
     // CREATE MEAL
@@ -162,48 +161,5 @@ struct MealController: RouteCollection {
         return .noContent
     }
     
-    //DELETE A FOOD FROM MEAL
-    func deleteFoodToMeal (req: Request) async throws -> MealWithFoodsResponseDTO {
-        let payload = try req.auth.require(UserPayload.self)
-        
-        let mealID = try req.parameters.require("mealID", as: UUID.self)
-        let foodMealID = try req.parameters.require("foodMealID", as: UUID.self)
-        
-        guard let meal = try await Meal.query(on: req.db)
-              .filter(\.$id == mealID)
-              .filter(\.$user.$id == payload.id)
-              .first()
-          else {
-              throw Abort(.notFound, reason: "Meal not found")
-          }
-        
-        guard let foodMeal = try await FoodMeal.query(on: req.db)
-                .filter(\.$id == foodMealID)
-                .filter(\.$meal.$id == mealID)
-                .first()
-            else {
-                throw Abort(.notFound, reason: "Food not in meal")
-            }
-        
-        // UPDATE CALCULS
-           let food = try await foodMeal.$food.get(on: req.db)
-           let qty = Double(foodMeal.quantity)
-
-           meal.totalCalories -= food.calories100g * qty / 100
-           meal.totalProteins -= food.proteins100g * qty / 100
-           meal.totalCarbs -= food.carbs100g * qty / 100
-           meal.totalFats -= food.fats100g * qty / 100
-
-           try await meal.update(on: req.db)
-
-           // DELETE FOOD-MEAL
-           try await foodMeal.delete(on: req.db)
-
-           // UPDATE MEAL + FOOD AFTER DELETE
-           try await meal.$foodMeals.load(on: req.db)
-           for foodMeal in meal.foodMeals {
-               try await foodMeal.$food.load(on: req.db)
-           }
-           return meal.toMealWithFoodsResponse()
-    }
+    
 }

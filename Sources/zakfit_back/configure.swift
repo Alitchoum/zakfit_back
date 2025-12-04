@@ -5,8 +5,11 @@ import Vapor
 
 // configures your application
 public func configure(_ app: Application) async throws {
-    // uncomment to serve files from /Public folder
-     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+
+    //MARK: - CORS
+
+
+    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.databases.use(DatabaseConfigurationFactory.mysql(
         hostname: Environment.get("DATABASE_HOST") ?? "127.0.0.1",
@@ -16,18 +19,16 @@ public func configure(_ app: Application) async throws {
         database: Environment.get("DATABASE_NAME") ?? "zakfitdb"
     ), as: .mysql)
 
-    //MARK: - Migrations Profil
+    
+    //MARK: - Migrations
     app.migrations.add(CreateUser())
 
-    //MARK: - Migrations Activity
     app.migrations.add(CreateCategoryActivities())
     app.migrations.add(CreateActivity())
     
-    //MARK: - Migrations Goals
     app.migrations.add(CreateNutritionGoal())
     app.migrations.add(CreatePhysicalGoal())
     
-    //MARK: - Migrations Meals
     app.migrations.add(CreateFoodCategory())
     app.migrations.add(CreateFood())
     app.migrations.add(CreateMeal())

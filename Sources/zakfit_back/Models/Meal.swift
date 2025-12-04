@@ -87,7 +87,7 @@ final class Meal: Model, Content, @unchecked Sendable {
                 fats: foodMeal.food.fats100g * Double(foodMeal.quantity) / 100
             )
         }
-
+        
         return MealWithFoodsResponseDTO(
             id: self.id,
             type: self.type,
