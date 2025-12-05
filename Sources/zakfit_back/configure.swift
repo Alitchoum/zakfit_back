@@ -8,7 +8,17 @@ public func configure(_ app: Application) async throws {
 
     //MARK: - CORS
 
+        let corsConfig = CORSMiddleware.Configuration(
+            allowedOrigin: .all,
+            allowedMethods: [.GET, .POST, .PUT, .DELETE, .PATCH, .OPTIONS,],
+            allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent],
+            allowCredentials: true,
+            cacheExpiration: 3600
+        )
 
+    let cors = CORSMiddleware(configuration: corsConfig)
+    app.middleware.use(cors)
+    
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.databases.use(DatabaseConfigurationFactory.mysql(

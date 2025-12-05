@@ -53,10 +53,8 @@ struct UserController: RouteCollection  {
     @Sendable
     func updateUserProfile(req: Request) async throws -> UserResponseDTO {
         
-        // Récupère le payload JWT (ref user)
         let payload = try req.auth.require(UserPayload.self)
         
-        //Cherche user
         guard let user = try await User.find(payload.id, on: req.db) else {
             throw Abort(.notFound, reason: "User not found")
         }

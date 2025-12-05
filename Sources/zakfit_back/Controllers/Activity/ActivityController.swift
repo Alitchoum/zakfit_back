@@ -14,8 +14,8 @@ struct ActivityController: RouteCollection {
         
         let protected = activities.grouped(JWTMiddleware())
         protected.post("current", use: createActivity)
-        protected.get("current", use: getActivities)
-        // options:  "categoryFilter=id-activity" "month=yyyy-MM" "durationFilter=0-1h" "sortBy=date" "order=asc"
+        protected.get("current", use: getFilteredActivities)
+        // options:  "category=id-activity" "period=yyyy-MM" "duration=0-1h" "sortBy=date" "order=asc"
         protected.patch("current", ":id", use: updateActivity)
         protected.delete("current", ":id", use: deleteActivity)
     }
@@ -42,7 +42,7 @@ struct ActivityController: RouteCollection {
     
     //GET USER ACTIVITIES + FILTERS + SORT
     @Sendable
-    func getActivities(req: Request) async throws -> [ActivityResponseDTO] {
+    func getFilteredActivities(req: Request) async throws -> [ActivityResponseDTO] {
         
         let payload = try req.auth.require(UserPayload.self)
         
@@ -51,8 +51,8 @@ struct ActivityController: RouteCollection {
             .with(\.$category)
         
         //FILTERED BY DURATION (min)
-        if let durationFilter = try? req.query.get(String.self, at: "durationFilter"){
-            switch durationFilter {
+        if let duration = try? req.query.get(String.self, at: "duration"){
+            switch duration {
             case "0-1h":
                 query = query.filter(\.$duration >= 0)
                 query = query.filter( \.$duration <= 60)
@@ -68,13 +68,14 @@ struct ActivityController: RouteCollection {
         }
         
         //FILTERED BY CATEGORY
-        if let categoryId = try? req.query.get(UUID.self, at: "categoryFilter"){
-            query = query.filter(\.$category.$id == categoryId)
+        if let categoryName = try? req.query.get(String.self, at: "category") {
+            query = query.join(CategoryActivity.self, on: \Activity.$category.$id == \CategoryActivity.$id)
+                .filter(CategoryActivity.self, \.$name == categoryName)
         }
         
         //FILTERED BY MONTH
-        if let monthFilter = try? req.query.get(String.self, at: "month") { //format yyyy-MM
-            let split = monthFilter.split(separator: "-")
+        if let period = try? req.query.get(String.self, at: "period") { //format yyyy-MM
+            let split = period.split(separator: "-")
             let year = Int(split[0])!
             let month = Int(split[1])!
             
@@ -87,7 +88,6 @@ struct ActivityController: RouteCollection {
             
             query = query.filter(\.$date >= startOfMonth)
             query = query.filter(\.$date < endOfMonth)
-            
         }
         
         //SORT (DATE / ACTIVITY / DURATION)
